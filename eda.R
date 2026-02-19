@@ -5,17 +5,18 @@ library(ggmosaic)
 library(factoextra)
 library(stringr)
 library(tidyverse)
+library(patchwork)
 theme_set(theme_light())
 
-swing_data_2024 = read_csv("swing_data_2025.csv")
+swing_data_2025 = read_csv("swing_data_2025.csv")
 
 
-swing_data_2024 %>% 
+swing_data_2025 %>% 
   ggplot(aes(x=attack_direction, y=intercept_ball_minus_batter_pos_y_inches))+
   geom_point()
 
 
-judge = swing_data_2024 %>% filter(batter_name=="Judge, Aaron")
+judge = swing_data_2025 %>% filter(batter_name=="Judge, Aaron")
 
 judge %>% 
   ggplot(aes(x=attack_direction, y=intercept_ball_minus_batter_pos_y_inches, 
@@ -27,7 +28,7 @@ judge %>%
              colour = blast, alpha = 0.7))+
   geom_point()
 
-arraez = swing_data_2024 %>% filter(batter_name=="Arraez, Luis")
+arraez = swing_data_2025 %>% filter(batter_name=="Arraez, Luis")
 
 arraez %>% 
   ggplot(aes(x=attack_direction, y=intercept_ball_minus_batter_pos_y_inches, 
@@ -39,7 +40,7 @@ arraez %>%
              colour = blast, alpha = 0.7))+
   geom_point()
 
-ohtani = swing_data_2024 %>% filter(batter_name=="Ohtani, Shohei", attack_direction<100)
+ohtani = swing_data_2025 %>% filter(batter_name=="Ohtani, Shohei", attack_direction<100)
 
 ohtani %>% 
   ggplot(aes(x=attack_direction, y=intercept_ball_minus_batter_pos_y_inches, 
@@ -99,7 +100,7 @@ plot_player_clusters <- function(data, player_name) {
   
   plot_leverage <- ggplot(player %>%
                             filter(!is.na(cluster), !is.na(leverage_group))) +
-    geom_mosaic(aes(x = product(cluster, leverage_group), fill = cluster)) +
+    geom_bar(aes(x = leverage_group, fill = cluster), position = "fill") +
     labs(title = paste0(name_title, " - Cluster vs. Count Leverage Group"),
          x = "Cluster × Count Leverage",
          y = "Proportion") +
@@ -115,20 +116,20 @@ plot_player_clusters <- function(data, player_name) {
     )
   # Mosaic Plots (using player with cluster)
   plot1 <- ggplot() +
-    geom_mosaic(data=player,
-                aes(x = product(cluster, runner_scoring_position), fill = cluster)) +
+    geom_bar(data=player,
+                aes(x = runner_scoring_position, fill = cluster), position = "fill") +
     ggtitle(paste(name_title, "- Cluster vs. RSP"))
   
   plot2 <- ggplot(player) +
-    geom_mosaic(aes(x = product(cluster, sac_fly_op), fill = cluster)) +
+    geom_bar(aes(x = sac_fly_op, fill = cluster), position = "fill") +
     ggtitle(paste(name_title, "- Cluster vs. Sac Fly Opportunity"))
   
   plot3 <- ggplot(player) +
-    geom_mosaic(aes(x = product(cluster, strikes), fill = cluster)) +
+    geom_bar(aes(x = strikes, fill = cluster), position = "fill") +
     ggtitle(paste(name_title, "- Cluster vs. Strikes"))
   
   plot5 <- ggplot(player) +
-    geom_mosaic(aes(x = product(cluster, late_sac_fly_op), fill = cluster)) +
+    geom_bar(aes(x = late_sac_fly_op, fill = cluster), position = "fill") +
     ggtitle(paste(name_title, "- Cluster vs. Late Close Sac Fly Opportunity"))
   
   # Summary: % squared up and blast overall
@@ -200,7 +201,7 @@ plot_player_clusters <- function(data, player_name) {
     add_count(pitch_name, name = "pitch_count") %>%
     filter(pitch_count >= 20) %>%
     ggplot() +
-    geom_mosaic(aes(x = product(cluster, pitch_name), fill = cluster)) +
+    geom_bar(aes(x = pitch_name, fill = cluster), position = "fill") +
     ggtitle(paste(name_title, "- Cluster vs. Pitch Type (2 Strikes, Min 20 Pitches)")) +
     labs(x = "Cluster × Pitch Type",
          y = "Proportion") +
@@ -217,26 +218,25 @@ plot_player_clusters <- function(data, player_name) {
   
   plot8 <- ggplot(player %>%
                     filter(!is.na(cluster), !is.na(strikes))) +
-    geom_mosaic(aes(x = product(cluster, strike_group), fill = cluster)) +
-    labs(title = paste0(name_title, " - Cluster vs. Strike Count Group"),
-         x = "Cluster × Strike Group",
-         y = "Proportion") +
-    theme_minimal()+
+    geom_bar(aes(x = strike_group, fill = cluster), position = "fill") +
+    ggtitle(paste0(name_title, " - Cluster vs. Strike Count Group")) +
+    xlab("Strike Group") +
+    ylab("Proportion") +
+    theme_minimal() +
     theme(
-      plot.title = element_text(size = 18, face = "bold"),  # Title size
-      axis.title.x = element_text(size = 14),               # X-axis label size
-      axis.title.y = element_text(size = 14),               # Y-axis label size
+      plot.title = element_text(size = 18, face = "bold"),
+      axis.title.x = element_text(size = 14),
+      axis.title.y = element_text(size = 14),
       axis.text.x = element_text(size = 12),
-      legend.title = element_text(size = 14),     # Legend title size
-      legend.text = element_text(size = 12),
-      axis.text.y = element_blank()
+      legend.title = element_text(size = 14),
+      legend.text = element_text(size = 12)
     )
   
   # Mosaic plot: Location Zone vs Cluster (2-strike counts only)
   plot7 <- player %>%
     filter(strikes == 2) %>%
     ggplot() +
-    geom_mosaic(aes(x = product(cluster, location_zone), fill = cluster)) +
+    geom_bar(aes(x = location_zone, fill = cluster), position="fill") +
     ggtitle(paste(name_title, "- Cluster vs. Location (2 Strikes)"))
   
   # --- PCA Section ---
@@ -329,11 +329,36 @@ plot_player_clusters <- function(data, player_name) {
 }
 
 
-plots <- plot_player_clusters(swing_data_2024, "Altuve, Jose")
+plots <- plot_player_clusters(swing_data_2025, "Altuve, Jose")
+
+altuve_swings=plots$swing_reference
+
+all_data_2025=read_csv("savant_data_2025.csv")
+
+all_altuve = all_data_2025 %>% filter(batter_name=="Altuve, Jose")
+
+altuve_full <- all_altuve %>%
+  left_join(
+    altuve_swings %>% select(game_date, at_bat_number, pitch_number, cluster, description, events),
+    by = c("game_date", "at_bat_number", "pitch_number"),
+    suffix = c("", "_swing")
+  )
 
 
+# See what pitch preceded a swing in a given cluster
+altuve_full %>%
+  arrange(game_date, at_bat_number, pitch_number) %>%
+  group_by(game_date, at_bat_number) %>%
+  mutate(
+    next_cluster = lead(cluster),
+    next_description = lead(description)
+  ) %>%
+  filter(!is.na(next_cluster)) %>%  # rows where the NEXT pitch was a swing
+  select(game_date, at_bat_number, pitch_number, pitch_name, 
+         plate_x, plate_z, next_cluster, next_description)
 
-plots$rsp_plot
+
+plots$plot8
 plots$sac_fly_plot
 plots$strikes_plot
 plots$launch_plot
@@ -343,39 +368,322 @@ x=plots$contact_by_cluster
 plots$pitch_type_2s_plot
 plots$location_2s_plot
 plots$plot8
+plots$pca_plot
+plots$pca_cluster_plot
+plots$pca_summary
+x
 
-
-
-library(dplyr)
-library(ggplot2)
-library(scales)
-library(ggalluvial)
-
-set.seed(42)
-
-toy_data <- tibble(
-  cluster = sample(c("1", "2"), 600, replace = TRUE, prob = c(.6, .4)),
-  runner_scoring_position = sample(c(TRUE, FALSE), 600, replace = TRUE),
-  sac_fly_op = sample(c(TRUE, FALSE), 600, replace = TRUE),
-  strikes = sample(0:2, 600, replace = TRUE),
-  pitch_name = sample(c("Fastball", "Slider", "Changeup"), 600, replace = TRUE),
-  location_zone = sample(
-    c("high-inside", "high-middle", "high-outside",
-      "middle-inside", "middle-middle", "middle-outside",
-      "low-inside", "low-middle", "low-outside"),
-    600, replace = TRUE
+cluster3_sequences <- altuve_full %>%
+  arrange(game_date, at_bat_number, pitch_number) %>%
+  group_by(game_date, at_bat_number) %>%
+  mutate(
+    prev_pitch_name = lag(pitch_name),
+    prev_zone       = lag(zone),
+    prev_description = lag(description)
+  ) %>%
+  ungroup() %>%
+  filter(cluster == "3") %>%
+  select(
+    game_date, at_bat_number, pitch_number,
+    prev_pitch_name, prev_zone, prev_description,
+    pitch_name, zone, cluster,
+    description, events,
+    balls, strikes, outs, inning
   )
-)
 
-toy_data %>%
-  count(cluster, runner_scoring_position) %>%
-  group_by(cluster) %>%
-  mutate(pct = n / sum(n)) %>%
-  ggplot(aes(x = cluster, y = pct, fill = runner_scoring_position)) +
-  geom_col(position = "fill") +
-  scale_y_continuous(labels = percent_format()) +
-  labs(
-    title = "Cluster vs RSP (Stacked Bar Replacement)",
-    y = "Proportion"
-  ) +
-  theme_minimal()
+print(cluster3_sequences)
+
+cluster3_sequences %>%
+  filter(!is.na(prev_pitch_name)) %>%  # drops cases where swing was pitch 1 of AB
+  count(prev_pitch_name, pitch_name, name = "n") %>%
+  arrange(desc(n)) %>%
+  print(n = 30)
+
+
+
+
+compare_pca_clusters <- function(data, player_name) {
+  
+  name_parts <- str_split(player_name, ",\\s*")[[1]]
+  name_title <- paste(name_parts[2], name_parts[1])
+  
+  # Prep data same as original function
+  player <- data %>%
+    filter(batter_name == player_name) %>%
+    mutate(row_id = row_number())
+  
+  player_clean <- player %>%
+    select(row_id, attack_direction, swing_path_tilt, attack_angle, 
+           bat_speed, swing_length, intercept_ball_minus_batter_pos_y_inches) %>%
+    filter(if_all(-row_id, ~ !is.na(.) & is.finite(.)))
+  
+  # PCA
+  pca_model <- prcomp(player_clean %>% select(-row_id, -attack_direction), scale. = TRUE)
+  pc_scores <- as.data.frame(pca_model$x)
+  
+  # --- Cluster on original features ---
+  mclust_original <- Mclust(player_clean %>% select(-row_id, -attack_direction))
+  
+  # --- Cluster on PC1+PC2 ---
+  mclust_4pc <- Mclust(pc_scores %>% select(PC1, PC2, PC3, PC4))
+  
+  # --- Cluster on PC1+PC2+PC3 ---
+  mclust_3pc <- Mclust(pc_scores %>% select(PC1, PC2, PC3))
+  
+  # Combine for comparison
+  cluster_compare <- player_clean %>%
+    mutate(
+      cluster_original = as.factor(mclust_original$classification),
+      cluster_4pc      = as.factor(mclust_4pc$classification),
+      cluster_3pc      = as.factor(mclust_3pc$classification),
+      PC1 = pc_scores$PC1,
+      PC2 = pc_scores$PC2,
+      PC3 = pc_scores$PC3
+    )
+  
+  # Join all three cluster assignments back to full player data via row_id
+  player <- left_join(player, 
+                      cluster_compare %>% select(row_id, cluster_original, cluster_4pc, cluster_3pc), 
+                      by = "row_id") %>%
+    mutate(
+      strike_group = ifelse(strikes == 2, "2 Strikes", "<2 Strikes")
+    )
+  
+  # --- BIC comparison (higher = better fit) ---
+  cat("=== BIC Comparison (higher is better) ===\n")
+  cat(sprintf("  Original features : %.1f  (%d clusters)\n", 
+              mclust_original$bic, mclust_original$G))
+  cat(sprintf("  PC1+PC2+PC3+PC4           : %.1f  (%d clusters)\n", 
+              mclust_4pc$bic,      mclust_4pc$G))
+  cat(sprintf("  PC1+PC2+PC3       : %.1f  (%d clusters)\n", 
+              mclust_3pc$bic,      mclust_3pc$G))
+  
+  # --- Agreement between solutions (Adjusted Rand Index) ---
+  cat("\n=== Cluster Agreement (ARI: 1 = identical, 0 = random) ===\n")
+  cat(sprintf("  Original vs 4PC : %.3f\n", 
+              adjustedRandIndex(mclust_original$classification, mclust_4pc$classification)))
+  cat(sprintf("  Original vs 3PC : %.3f\n", 
+              adjustedRandIndex(mclust_original$classification, mclust_3pc$classification)))
+  cat(sprintf("  4PC vs 3PC      : %.3f\n", 
+              adjustedRandIndex(mclust_4pc$classification, mclust_3pc$classification)))
+  
+  
+  
+  
+  # --- Helper: contact quality summary for any cluster column ---
+  make_contact_summary <- function(cluster_col, label) {
+    result <- player %>%
+      filter(!is.na(.data[[cluster_col]])) %>%
+      group_by(cluster = .data[[cluster_col]]) %>%
+      summarise(
+        n                  = n(),
+        squared_up_pct     = mean(squared_up == TRUE, na.rm = TRUE),
+        blast_pct          = mean(blast == TRUE, na.rm = TRUE),
+        contact_pct        = mean(!(description %in% c("swinging_strike", "swinging_strike_blocked")), na.rm = TRUE),
+        two_strike_contact_pct = mean(strikes == 2 & !(description %in% c("swinging_strike", "swinging_strike_blocked")), na.rm = TRUE) /
+          mean(strikes == 2, na.rm = TRUE),
+        xwoba              = mean(expected_woba, na.rm = TRUE),
+        swing_length       = mean(swing_length, na.rm = TRUE),
+        swing_path_tilt    = mean(swing_path_tilt, na.rm = TRUE),
+        attack_angle       = mean(attack_angle, na.rm = TRUE),
+        .groups = "drop"
+      ) %>%
+      mutate(solution = label)
+    
+    cat(paste0("\n=== Contact Quality by Cluster: ", label, " ===\n"))
+    print(result)
+    return(result)
+  }
+  
+  contact_original <- make_contact_summary("cluster_original", "Original Features")
+  contact_4pc      <- make_contact_summary("cluster_4pc",      "PC1 + PC2")
+  contact_3pc      <- make_contact_summary("cluster_3pc",      "PC1 + PC2 + PC3")
+  
+  # Stack all three for easy comparison
+  contact_all <- bind_rows(contact_original, contact_4pc, contact_3pc)
+  # --- Helper to build plot8 for any cluster assignment ---
+  make_strike_plot <- function(cluster_col, label) {
+    ggplot(player %>% filter(!is.na(.data[[cluster_col]]), !is.na(strikes))) +
+      geom_bar(aes(x = strike_group, fill = .data[[cluster_col]]), position = "fill") +
+      ggtitle(paste0(name_title, " - Cluster vs. Strike Count Group\n(", label, ")")) +
+      xlab("Strike Group") +
+      ylab("Proportion") +
+      labs(fill = "Cluster") +
+      theme_minimal() +
+      theme(
+        plot.title   = element_text(size = 14, face = "bold"),
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 12),
+        axis.text.x  = element_text(size = 11),
+        legend.title = element_text(size = 12),
+        legend.text  = element_text(size = 11)
+      )
+  }
+  
+  plot8_original <- make_strike_plot("cluster_original", "Original Features")
+  plot8_4pc      <- make_strike_plot("cluster_4pc",      "PC1 + PC2 + PC3 + PC4")
+  plot8_3pc      <- make_strike_plot("cluster_3pc",      "PC1 + PC2 + PC3")
+  
+  # --- PCA scatter plots colored by each clustering ---
+  make_pca_plot <- function(cluster_col, label) {
+    ggplot(cluster_compare, aes(x = PC1, y = PC2, color = .data[[cluster_col]])) +
+      geom_point(alpha = 0.6, size = 2) +
+      ggtitle(paste0(name_title, " - ", label)) +
+      theme_minimal() + 
+      scale_color_brewer(palette = "Set1") +
+      labs(color = "Cluster")
+  }
+  
+  p_original <- make_pca_plot("cluster_original", "Original Features Clustering")
+  p_4pc      <- make_pca_plot("cluster_4pc",      "2-PC Clustering")
+  p_3pc      <- make_pca_plot("cluster_3pc",      "3-PC Clustering")
+  
+  pca_combined <- p_original + p_4pc + p_3pc +
+    plot_layout(ncol = 3) +
+    plot_annotation(title = paste(name_title, "- PCA Scatter Comparison"))
+  
+  strike_combined <- plot8_original + plot8_4pc + plot8_3pc +
+    plot_layout(ncol = 3) +
+    plot_annotation(title = paste(name_title, "- Strike Count Group Comparison"))
+  
+  print(pca_combined)
+  print(strike_combined)
+  
+  return(list(
+    cluster_compare  = cluster_compare,
+    player           = player,
+    mclust_original  = mclust_original,
+    mclust_4pc       = mclust_4pc,
+    mclust_3pc       = mclust_3pc,
+    pca_combined     = pca_combined,
+    strike_combined  = strike_combined,
+    plot8_original   = plot8_original,
+    plot8_4pc        = plot8_4pc,
+    plot8_3pc        = plot8_3pc,
+    contact_original = contact_original,
+    contact_4pc      = contact_4pc,
+    contact_3pc      = contact_3pc,
+    contact_all      = contact_all
+  ))
+}
+
+# Run it
+
+
+pca_cluster_comparison <- compare_pca_clusters(swing_data_2025, "Altuve, Jose")
+
+
+pca_cluster_comparison$cluster_compare
+
+player=swing_data_2025 %>% filter(batter_name=="Muncy, Max")
+
+player <- player %>%
+  mutate(
+    intercept_zone = case_when(
+      intercept_ball_minus_batter_pos_y_inches < quantile(intercept_ball_minus_batter_pos_y_inches, 0.33, na.rm = TRUE) ~ "Early (Out Front)",
+      intercept_ball_minus_batter_pos_y_inches > quantile(intercept_ball_minus_batter_pos_y_inches, 0.67, na.rm = TRUE) ~ "Late (Deep)",
+      TRUE ~ "Middle"
+    )
+  )
+
+# 1. Density plot - attack direction distribution by intercept zone
+# Best for seeing how the full distribution shifts
+p1 <- ggplot(player, aes(x = attack_direction, fill = intercept_zone, color = intercept_zone)) +
+  geom_density(alpha = 0.3) +
+  ggtitle("Attack Direction Distribution by Intercept Zone") +
+  xlab("Attack Direction") + ylab("Density") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+
+# 2. Scatter with smoothed trend - shows raw relationship + trend
+# Best for seeing the continuous relationship
+p2 <- ggplot(player, aes(x = intercept_ball_minus_batter_pos_y_inches, y = attack_direction)) +
+  geom_point(alpha = 0.2, size = 1.5) +
+  geom_smooth(method = "loess", color = "firebrick", se = TRUE) +
+  ggtitle("Attack Direction by Intercept Point") +
+  xlab("Intercept Point (inches)") + ylab("Attack Direction") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+
+
+# 4. 2D density / heatmap - shows where observations concentrate
+# Best for seeing joint distribution hotspots
+p4 <- ggplot(player, aes(x = intercept_ball_minus_batter_pos_y_inches, y = attack_direction)) +
+  geom_bin2d(bins = 40) +
+  scale_fill_viridis_c(option = "magma") +
+  geom_smooth(method = "loess", color = "white", se = FALSE, linewidth = 1) +
+  ggtitle("Attack Direction vs Intercept Point - Joint Density") +
+  xlab("Intercept Point (inches)") + ylab("Attack Direction") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+
+# Print all together
+
+p1
+ 
+p2
+
+p4
+
+player=swing_data_2025 %>% filter(batter_name=="Goldschmidt, Paul")
+
+player <- player %>%
+  mutate(
+    intercept_zone = case_when(
+      intercept_ball_minus_batter_pos_y_inches < quantile(intercept_ball_minus_batter_pos_y_inches, 0.33, na.rm = TRUE) ~ "Early (Out Front)",
+      intercept_ball_minus_batter_pos_y_inches > quantile(intercept_ball_minus_batter_pos_y_inches, 0.67, na.rm = TRUE) ~ "Late (Deep)",
+      TRUE ~ "Middle"
+    )
+  )
+
+# 1. Density plot - attack direction distribution by intercept zone
+# Best for seeing how the full distribution shifts
+p1 <- ggplot(player, aes(x = attack_direction, fill = intercept_zone, color = intercept_zone)) +
+  geom_density(alpha = 0.3) +
+  ggtitle("Attack Direction Distribution by Intercept Zone") +
+  xlab("Attack Direction") + ylab("Density") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+
+# 2. Scatter with smoothed trend - shows raw relationship + trend
+# Best for seeing the continuous relationship
+p2 <- ggplot(player, aes(x = intercept_ball_minus_batter_pos_y_inches, y = attack_direction)) +
+  geom_point(alpha = 0.2, size = 1.5) +
+  geom_smooth(method = "loess", color = "firebrick", se = TRUE) +
+  ggtitle("Attack Direction by Intercept Point") +
+  xlab("Intercept Point (inches)") + ylab("Attack Direction") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+
+
+# 4. 2D density / heatmap - shows where observations concentrate
+# Best for seeing joint distribution hotspots
+p4 <- ggplot(player, aes(x = intercept_ball_minus_batter_pos_y_inches, y = attack_direction)) +
+  geom_bin2d(bins = 40) +
+  scale_fill_viridis_c(option = "magma") +
+  geom_smooth(method = "loess", color = "white", se = FALSE, linewidth = 1) +
+  ggtitle("Attack Direction vs Intercept Point - Joint Density") +
+  xlab("Intercept Point (inches)") + ylab("Attack Direction") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+
+# Print all together
+
+p1
+
+p2
+
+p4
+
+
+
+
+
+
+
+
+
+
+
+
+
