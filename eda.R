@@ -572,6 +572,12 @@ compare_pca_clusters <- function(data, player_name) {
 
 pca_cluster_comparison <- compare_pca_clusters(swing_data_2025, "Altuve, Jose")
 
+pca_cluster_comparison$contact_original
+
+pca_cluster_comparison$contact_3pc
+
+pca_cluster_comparison$plot8_3pc
+
 
 pca_cluster_comparison$cluster_compare
 
@@ -680,7 +686,72 @@ p4
 
 
 
+player=swing_data_2025 %>% filter(batter_name=="Ohtani, Shohei")
 
+player <- player %>%
+  mutate(
+    intercept_zone = case_when(
+      intercept_ball_minus_batter_pos_y_inches < quantile(intercept_ball_minus_batter_pos_y_inches, 0.33, na.rm = TRUE) ~ "Early (Out Front)",
+      intercept_ball_minus_batter_pos_y_inches > quantile(intercept_ball_minus_batter_pos_y_inches, 0.67, na.rm = TRUE) ~ "Late (Deep)",
+      TRUE ~ "Middle"
+    )
+  )
+
+# 1. Density plot - attack direction distribution by intercept zone
+# Best for seeing how the full distribution shifts
+p1 <- ggplot(player, aes(x = attack_direction, fill = intercept_zone, color = intercept_zone)) +
+  geom_density(alpha = 0.3) +
+  ggtitle("Attack Direction Distribution by Intercept Zone") +
+  xlab("Attack Direction") + ylab("Density") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+
+p1
+
+
+player=swing_data_2025 %>% filter(batter_name=="Goldschmidt, Paul")
+
+player <- player %>%
+  mutate(
+    intercept_zone = case_when(
+      intercept_ball_minus_batter_pos_y_inches < quantile(intercept_ball_minus_batter_pos_y_inches, 0.33, na.rm = TRUE) ~ "Early (Out Front)",
+      intercept_ball_minus_batter_pos_y_inches > quantile(intercept_ball_minus_batter_pos_y_inches, 0.67, na.rm = TRUE) ~ "Late (Deep)",
+      TRUE ~ "Middle"
+    )
+  )
+
+# 1. Density plot - attack direction distribution by intercept zone
+# Best for seeing how the full distribution shifts
+p1 <- ggplot(player, aes(x = attack_direction, fill = intercept_zone, color = intercept_zone)) +
+  geom_density(alpha = 0.3) +
+  ggtitle("Attack Direction Distribution by Intercept Zone") +
+  xlab("Attack Direction") + ylab("Density") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+p1
+
+
+early_cut  <- quantile(swing_data_2025$intercept_ball_minus_batter_pos_y_inches, 0.33, na.rm = TRUE)
+late_cut   <- quantile(swing_data_2025$intercept_ball_minus_batter_pos_y_inches, 0.67, na.rm = TRUE)
+
+player <- swing_data_2025 %>%
+  filter(batter_name == "Muncy, Max") %>%
+  mutate(
+    intercept_zone = case_when(
+      intercept_ball_minus_batter_pos_y_inches < early_cut ~ "Early (Out Front)",
+      intercept_ball_minus_batter_pos_y_inches > late_cut  ~ "Late (Deep)",
+      TRUE ~ "Middle"
+    )
+  )
+
+
+p1 <- ggplot(player, aes(x = attack_direction, fill = intercept_zone, color = intercept_zone)) +
+  geom_density(alpha = 0.3) +
+  ggtitle("Attack Direction Distribution by Intercept Zone") +
+  xlab("Attack Direction") + ylab("Density") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+p1
 
 
 
