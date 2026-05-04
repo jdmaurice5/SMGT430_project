@@ -2,4 +2,10 @@
 .Rhistory
 .RData
 .Ruserdata
-/Data/
+/data/*
+/old_materials/Data/*
+*.csv
+*.rds
+*.RData
+app_materials/savant_data_with_clusters_and_preds.csv
+app_materials/shiny_app/bundle.rds
