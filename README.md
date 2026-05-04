@@ -43,7 +43,7 @@ SMGT490_project/
 
 ## Execution Order
 
-Run scripts in numerical order (00 → 06) or `run run_all.R`
+Run scripts in numerical order (00 → 06) or run `run_all.R`
 
 
 ## Key Dependencies
