@@ -2,6 +2,9 @@
 
 A comprehensive baseball swing analysis project using Statcast/TrackMan data to analyze hitter swing patterns, predict pitch types, and cluster swing qualities.
 
+## Shiny App
+The shiny app can be found here: `https://jdmaurice.shinyapps.io/shiny_app/`
+
 ## Project Overview
 
 This project analyzes MLB swing data from the 2024-2025 seasons to:
