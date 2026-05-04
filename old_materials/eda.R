@@ -754,7 +754,21 @@ p1 <- ggplot(player, aes(x = attack_direction, fill = intercept_zone, color = in
 p1
 
 
+data=read_csv("savant_data_with_clusters_and_preds.csv")
+
+test2=data %>% filter(batter_name == "Díaz, Yandy" & year ==2025 & cluster ==2) %>% summarize (pitch_name, zone, count)
+
+test2 %>% summarize(n_distinct(cluster, na.rm = TRUE))
+
+data %>%
+  filter(batter_name == "Díaz, Yandy",
+         year == 2025,
+         cluster == 2) %>%
+  count(zone, sort = TRUE)
+
+test <- data %>%
+  group_by(batter_name, year) %>%
+  summarize(n_clust = n_distinct(cluster, na.rm = TRUE)) %>% filter(n_clust>0)
 
 
-
-
+quantile(test$n_clust, probs = c(0, .25, .5, .90, 1), na.rm = TRUE)
