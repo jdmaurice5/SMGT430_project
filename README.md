@@ -1,4 +1,4 @@
-# SMGT430 Baseball Analytics Project
+# SMGT490 Baseball Analytics Project
 
 A comprehensive baseball swing analysis project using Statcast/TrackMan data to analyze hitter swing patterns, predict pitch types, and cluster swing qualities.
 
